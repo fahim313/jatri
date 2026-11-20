@@ -1,0 +1,65 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: jatri_db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in .env}
+      POSTGRES_DB: ${DB_NAME:-jatri}
+
+    ports:
+      - "127.0.0.1:5433:5432"
+
+    volumes:
+      - jatri_pgdata:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: jatri_api
+    restart: unless-stopped
+
+    env_file:
+      - ./.env
+
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+
+    ports:
+      - "127.0.0.1:8101:8000"
+
+    volumes:
+      - ./backend/app:/app/app
+      
+
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  jatri_pgdata:
