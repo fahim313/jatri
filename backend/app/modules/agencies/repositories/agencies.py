@@ -23,10 +23,21 @@ class AgencyRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_all(self) -> list[Agency]:
-        result = await self.session.execute(
-            select(Agency).order_by(Agency.id.desc())
-        )
+    async def get_all(
+        self,
+        search: str | None = None,
+    ) -> list[Agency]:
+        query = select(Agency)
+
+        if search:
+            query = query.where(
+                Agency.name.ilike(f"%{search}%")
+                | Agency.rl_number.ilike(f"%{search}%")
+            )
+
+        query = query.order_by(Agency.id.desc())
+
+        result = await self.session.execute(query)
         return list(result.scalars().all())
 
     async def update(self, agency: Agency, agency_data: dict) -> Agency:

@@ -33,8 +33,11 @@ class AgencyService:
 
         return agency
 
-    async def get_agencies(self):
-        return await self.repository.get_all()
+    async def get_agencies(
+        self,
+        search: str | None = None,
+    ):
+        return await self.repository.get_all(search=search)
 
     async def update_agency(
         self,
