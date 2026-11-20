@@ -6,8 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_session
 from app.modules.agencies.router import router as agencies_router
+from app.modules.auth.router import router as auth_router
 
 api_router = APIRouter(prefix="/api/v1")
+api_router.include_router(auth_router)
 api_router.include_router(agencies_router)
 
 @api_router.get("/health", tags=["Health"])
