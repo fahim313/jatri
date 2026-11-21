@@ -1,5 +1,4 @@
-from fastapi import HTTPException, status
-
+from app.core.exceptions.errors import ConflictError, UnauthorizedError
 from app.core.security import (
     create_access_token,
     hash_password,
@@ -23,10 +22,7 @@ class AuthService:
         )
 
         if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Email already registered",
-            )
+            raise ConflictError("User", user_data.email)
 
         user = await self.repository.create(
             {
@@ -47,11 +43,7 @@ class AuthService:
             credentials.password,
             user.password_hash,
         ):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect email or password",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+            raise UnauthorizedError("Incorrect email or password")
 
         access_token = create_access_token(user.id)
 

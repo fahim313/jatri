@@ -1,5 +1,4 @@
-from fastapi import HTTPException, status
-
+from app.core.exceptions.errors import NotFoundError
 from app.modules.agencies.repositories.agencies import AgencyRepository
 from app.modules.agencies.schemas.agencies import AgencyCreate, AgencyUpdate
 
@@ -19,6 +18,7 @@ class AgencyService:
                 "managed_by": managed_by,
             }
         )
+
         await self.repository.session.commit()
         return agency
 
@@ -26,10 +26,7 @@ class AgencyService:
         agency = await self.repository.get_by_id(agency_id)
 
         if not agency:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Agency not found",
-            )
+            raise NotFoundError("Agency", str(agency_id))
 
         return agency
 

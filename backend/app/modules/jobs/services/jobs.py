@@ -1,7 +1,6 @@
 from datetime import UTC, date, datetime
 
-from fastapi import HTTPException, status
-
+from app.core.exceptions.errors import ConflictError, NotFoundError
 from app.modules.jobs.repositories.jobs import JobRepository
 from app.modules.jobs.schemas.jobs import JobOfferCreate, JobOfferUpdate
 
@@ -24,10 +23,7 @@ class JobService:
         job = await self.repository.get_by_id(job_id)
 
         if not job:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Job offer not found",
-            )
+            raise NotFoundError("Job", str(job_id))
 
         return job
 
@@ -71,9 +67,9 @@ class JobService:
             job.application_deadline
             and job.application_deadline < date.today()
         ):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot publish an expired job offer",
+            raise ConflictError(
+                "Job",
+                f"{job_id} cannot be published because its deadline has passed",
             )
 
         job.status = "Published"
@@ -86,9 +82,9 @@ class JobService:
         job = await self.get_job(job_id)
 
         if job.status == "Expired":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Expired job offers cannot be unpublished",
+            raise ConflictError(
+                "Job",
+                f"{job_id} is expired and cannot be unpublished",
             )
 
         job.status = "Draft"
@@ -103,9 +99,9 @@ class JobService:
             job.application_deadline is None
             or job.application_deadline >= date.today()
         ):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Job application deadline has not passed",
+            raise ConflictError(
+                "Job",
+                f"{job_id} cannot be expired because its deadline has not passed",
             )
 
         job.status = "Expired"
@@ -128,9 +124,6 @@ class JobService:
         job = await self.repository.get_by_id(job_id)
 
         if not job or job.status != "Published":
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Job offer not found",
-            )
+            raise NotFoundError("Published Job", str(job_id))
 
         return job
