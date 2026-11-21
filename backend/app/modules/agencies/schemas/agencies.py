@@ -8,6 +8,8 @@ class AgencyCreate(BaseModel):
     rl_number: str
     license_status: str
     license_expiry: date | None = None
+    source_url: str | None = None
+    last_verified_at: datetime | None = None
 
 
 class AgencyUpdate(BaseModel):
@@ -15,6 +17,8 @@ class AgencyUpdate(BaseModel):
     rl_number: str | None = None
     license_status: str | None = None
     license_expiry: date | None = None
+    source_url: str | None = None
+    last_verified_at: datetime | None = None
 
 
 class AgencyResponse(BaseModel):
@@ -23,6 +27,7 @@ class AgencyResponse(BaseModel):
     rl_number: str
     license_status: str
     license_expiry: date | None
+    source_url: str | None
     last_verified_at: datetime | None
     managed_by: int
 

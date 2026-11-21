@@ -18,7 +18,8 @@ class Settings(BaseSettings):
     DB_USER: str = "postgres"
     DB_PASSWORD: SecretStr
     DB_NAME: str = "jatri"
-
+    
+    SEED_ADMIN_EMAIL: str
     SECRET_KEY: SecretStr
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
