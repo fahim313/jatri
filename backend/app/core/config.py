@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     SECRET_KEY: SecretStr
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    GROQ_API_KEY: SecretStr
+    GROQ_MODEL: str
+
     @property
     def DATABASE_URL(self) -> URL:
         return URL.create(

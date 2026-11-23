@@ -8,6 +8,7 @@ dependencies = [
     "asyncpg>=0.32.0",
     "email-validator>=2.4.0",
     "fastapi>=0.165.0",
+    "langchain-groq>=1.2.1",
     "pwdlib[argon2]>=0.4.2",
     "pydantic-settings>=2.16.3",
     "pyjwt>=2.15.1",
@@ -26,5 +27,6 @@ module-name = "app"
 
 [dependency-groups]
 dev = [
+    "basedpyright>=1.40.2",
     "ruff>=0.17.5",
 ]
