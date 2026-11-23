@@ -40,6 +40,35 @@ class AgencyRepository:
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
+    async def search_for_verification(
+        self,
+        rl_number: str | None = None,
+        name: str | None = None,
+    ) -> list[Agency]:
+        if rl_number:
+            result = await self.session.execute(
+                select(Agency).where(
+                    Agency.rl_number == rl_number.strip()
+                )
+            )
+
+            agency = result.scalar_one_or_none()
+
+            if agency:
+                return [agency]
+
+        if name:
+            result = await self.session.execute(
+                select(Agency)
+                .where(Agency.name.ilike(f"%{name.strip()}%"))
+                .order_by(Agency.id.desc())
+                .limit(5)
+            )
+
+            return list(result.scalars().all())
+
+        return []
+
     async def update(self, agency: Agency, agency_data: dict) -> Agency:
         for field, value in agency_data.items():
             setattr(agency, field, value)

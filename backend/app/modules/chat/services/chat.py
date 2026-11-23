@@ -1,10 +1,12 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import AIMessage, HumanMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.agents.graph import create_agent_graph
 from app.core.exceptions.errors import NotFoundError
-from app.integrations.llm.base import ChatMessage, LLMProvider
 from app.modules.chat.repositories.chat import ChatRepository
 from app.modules.chat.schemas.chat import (
     ChatRequest,
@@ -21,11 +23,11 @@ class ChatService:
     def __init__(
         self,
         session: AsyncSession,
-        llm_provider: LLMProvider,
+        model: BaseChatModel,
     ) -> None:
-        self.session: AsyncSession = session
-        self.repository: ChatRepository = ChatRepository(session)
-        self.llm_provider: LLMProvider = llm_provider
+        self.session = session
+        self.repository = ChatRepository(session)
+        self.model = model
 
     async def send_message(
         self,
@@ -54,21 +56,20 @@ class ChatService:
                 limit=20,
             )
 
-            messages = [
-                ChatMessage.model_validate(
-                    {
-                        "role": message.role,
-                        "content": message.content,
-                    }
-                )
-                for message in history
-            ]
+            messages = []
+
+            for message in history:
+                if message.role == "user":
+                    messages.append(
+                        HumanMessage(content=message.content)
+                    )
+                else:
+                    messages.append(
+                        AIMessage(content=message.content)
+                    )
 
             messages.append(
-                ChatMessage(
-                    role="user",
-                    content=request.content,
-                )
+                HumanMessage(content=request.content)
             )
 
             current_date = datetime.now(
@@ -80,10 +81,26 @@ class ChatService:
                 current_date,
             )
 
-            reply = await self.llm_provider.chat(
-                system=system_prompt,
-                messages=messages,
+            graph = create_agent_graph(
+                session=self.session,
+                model=self.model,
+                system_prompt=system_prompt,
             )
+
+            result = await graph.ainvoke(
+                {"messages": messages}
+            )
+
+            final_message = result["messages"][-1]
+            reply = final_message.content
+
+            if not isinstance(reply, str):
+                reply = "".join(
+                    block.get("text", "")
+                    for block in reply
+                    if isinstance(block, dict)
+                    and block.get("type") == "text"
+                )
 
             await self.repository.create_message(
                 conversation_id=conversation.id,
