@@ -39,3 +39,9 @@ class LLMUnavailableError(AppError):
 
     def __init__(self, message: str = "LLM provider is unavailable"):
         super().__init__(message)
+
+class EmbeddingUnavailableError(AppError):
+    """Raised when the embedding provider is unavailable."""
+
+    def __init__(self, message: str = "Embedding service is unavailable"):
+        super().__init__(message)        

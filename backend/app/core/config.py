@@ -25,6 +25,10 @@ class Settings(BaseSettings):
 
     GROQ_API_KEY: SecretStr
     GROQ_MODEL: str
+    
+    GEMINI_API_KEY: SecretStr
+    GEMINI_EMBEDDING_MODEL: str 
+    GEMINI_EMBEDDING_DIMENSION: int
 
     @property
     def DATABASE_URL(self) -> URL:

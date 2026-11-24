@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from app.core.exceptions.errors import (
     AppError,
     ConflictError,
+    EmbeddingUnavailableError,
     ForbiddenError,
     LLMUnavailableError,
     NotFoundError,
@@ -57,6 +58,20 @@ def register_exception_handlers(app: FastAPI) -> None:
             status_code=503,
             content={
                 "detail": "The assistant is unavailable. Try again later."
+            },
+        )
+
+    @app.exception_handler(EmbeddingUnavailableError)
+    async def embedding_unavailable(
+        _: Request,
+        exc: EmbeddingUnavailableError,
+    ) -> JSONResponse:
+        logger.warning("Embedding provider unavailable: %s", exc)
+
+        return JSONResponse(
+            status_code=503,
+            content={
+                "detail": "The embedding service is temporarily unavailable. Try again later."
             },
         )
 

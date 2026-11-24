@@ -32,6 +32,9 @@ COPY --chown=app:app app/ ./app/
 COPY --chown=app:app alembic/ ./alembic/
 COPY --chown=app:app alembic.ini ./
 
+RUN mkdir -p /app/storage/documents && \
+    chown -R app:app /app/storage
+
 USER app
 
 EXPOSE 8000
