@@ -1,8 +1,14 @@
+import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import (
+    AIMessage,
+    AnyMessage,
+    HumanMessage,
+)
+from langgraph.graph import MessagesState
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.graph import create_agent_graph
@@ -17,6 +23,9 @@ from app.modules.chat.schemas.chat import (
     MessageItem,
 )
 from app.modules.chat.services.prompts import JATRI_SYSTEM_PROMPT
+from app.modules.chat.services.question_router import QuestionRouter
+
+logger = logging.getLogger("uvicorn.error")
 
 
 class ChatService:
@@ -28,6 +37,34 @@ class ChatService:
         self.session = session
         self.repository = ChatRepository(session)
         self.model = model
+        self.question_router = QuestionRouter(model)
+
+    @staticmethod
+    def _build_conversation_context(history) -> str:
+        context_parts: list[str] = []
+
+        for message in history:
+            role = "User" if message.role == "user" else "Assistant"
+            context_parts.append(f"{role}: {message.content}")
+
+        return "\n".join(context_parts)
+
+    @staticmethod
+    def _extract_text(content: str | list) -> str:
+        if isinstance(content, str):
+            return content
+
+        parts: list[str] = []
+
+        for block in content:
+            if isinstance(block, str):
+                parts.append(block)
+            elif isinstance(block, dict):
+                text = block.get("text")
+                if isinstance(text, str):
+                    parts.append(text)
+
+        return "\n".join(parts)
 
     async def send_message(
         self,
@@ -53,10 +90,25 @@ class ChatService:
 
             history = await self.repository.get_messages(
                 conversation_id=conversation.id,
-                limit=20,
+                limit=6,
             )
 
-            messages = []
+            conversation_context = self._build_conversation_context(
+                history
+            )
+
+            route = await self.question_router.route(
+                question=request.content,
+                conversation_context=conversation_context,
+            )
+
+            logger.info(
+                "Question routed | Conversation ID: %s | Types: %s",
+                conversation.id,
+                [item.value for item in route.question_types],
+            )
+
+            messages: list[AnyMessage] = []
 
             for message in history:
                 if message.role == "user":
@@ -85,22 +137,27 @@ class ChatService:
                 session=self.session,
                 model=self.model,
                 system_prompt=system_prompt,
+                question_types=route.question_types,
             )
 
-            result = await graph.ainvoke(
-                {"messages": messages}
+            logger.info(
+                "Starting agent execution | Conversation ID: %s",
+                conversation.id,
+            )
+
+            initial_state: MessagesState = {
+                "messages": messages,
+            }
+
+            result = await graph.ainvoke(initial_state)
+
+            logger.info(
+                "Agent execution completed | Conversation ID: %s",
+                conversation.id,
             )
 
             final_message = result["messages"][-1]
-            reply = final_message.content
-
-            if not isinstance(reply, str):
-                reply = "".join(
-                    block.get("text", "")
-                    for block in reply
-                    if isinstance(block, dict)
-                    and block.get("type") == "text"
-                )
+            reply = self._extract_text(final_message.content)
 
             await self.repository.create_message(
                 conversation_id=conversation.id,
@@ -123,6 +180,10 @@ class ChatService:
 
         except Exception:
             await self.session.rollback()
+            logger.exception(
+                "Chat request failed | User ID: %s",
+                user_id,
+            )
             raise
 
     async def get_conversations(
@@ -176,11 +237,11 @@ class ChatService:
         )
 
         total = await self.repository.count_messages(
-            conversation_id=conversation_id,
+            conversation_id=conversation.id,
         )
 
         return ConversationMessagesResponse(
-            conversation_id=conversation_id,
+            conversation_id=conversation.id,
             items=[
                 MessageItem.model_validate(message)
                 for message in messages
@@ -208,7 +269,6 @@ class ChatService:
                 )
 
             await self.repository.delete_conversation(conversation)
-
             await self.session.commit()
 
         except Exception:

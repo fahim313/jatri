@@ -1,5 +1,6 @@
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import ForeignKey, Index, Integer, Text, UniqueConstraint
+from sqlalchemy import Computed, ForeignKey, Index, Integer, Text, UniqueConstraint
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimeStampMixin
@@ -17,6 +18,12 @@ class DocumentChunk(Base, TimeStampMixin):
 
     content: Mapped[str] = mapped_column(
         Text,
+        nullable=False,
+    )
+
+    search_vector: Mapped[str] = mapped_column(
+        TSVECTOR,
+        Computed("to_tsvector('simple', content)", persisted=True),
         nullable=False,
     )
 
@@ -44,5 +51,10 @@ class DocumentChunk(Base, TimeStampMixin):
         Index(
             "ix_document_chunks_document_id",
             "document_id",
+        ),
+        Index(
+            "ix_document_chunks_search_vector",
+            "search_vector",
+            postgresql_using="gin",
         ),
     )

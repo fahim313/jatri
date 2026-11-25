@@ -1,27 +1,12 @@
 import asyncio
 
-from sqlalchemy import text
-
 from app.db.session import SessionLocal
 from app.integrations.embeddings.dependencies import get_embedding_client
+from app.modules.documents.repositories.document_chunk_repository import (
+    DocumentChunkRepository,
+)
 
 SEARCH_QUERY = "What documents should a worker keep before travelling abroad?"
-
-SEARCH_SQL = text("""
-    SELECT
-        dc.id,
-        d.title,
-        dc.page_number,
-        dc.chunk_index,
-        dc.content,
-        1 - (dc.embedding <=> CAST(:query_embedding AS vector)) AS similarity
-    FROM document_chunks AS dc
-    JOIN documents AS d ON d.id = dc.document_id
-    WHERE d.status = 'Approved'
-      AND dc.embedding IS NOT NULL
-    ORDER BY dc.embedding <=> CAST(:query_embedding AS vector)
-    LIMIT 5
-""")
 
 
 async def main():
@@ -33,12 +18,12 @@ async def main():
     print(f"Query embedding dimensions: {len(query_embedding)}")
 
     async with SessionLocal() as session:
-        result = await session.execute(
-            SEARCH_SQL,
-            {"query_embedding": str(query_embedding)},
-        )
+        repository = DocumentChunkRepository(session)
 
-        rows = result.mappings().all()
+        rows = await repository.search_similar_chunks(
+            query_embedding=query_embedding,
+            top_k=5,
+        )
 
         if not rows:
             print("\nNo matching approved document chunks found.")
@@ -49,7 +34,8 @@ async def main():
         for row in rows:
             print("\n" + "=" * 60)
             print(f"Chunk ID: {row['id']}")
-            print(f"Document: {row['title']}")
+            print(f"Document: {row['document_title']}")
+            print(f"Document ID: {row['document_id']}")
             print(f"Page: {row['page_number']}")
             print(f"Chunk Index: {row['chunk_index']}")
             print(f"Similarity: {row['similarity']:.4f}")
