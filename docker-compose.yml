@@ -63,6 +63,34 @@ services:
       retries: 3
       start_period: 30s
 
+  mcp:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: jatri_mcp
+    restart: unless-stopped
+
+    env_file:
+      - ./.env
+
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+
+    ports:
+      - "127.0.0.1:8765:8765"
+
+    volumes:
+      - ./backend/app:/app/app
+      - jatri_document_storage:/app/storage/documents
+
+    command: python -m app.mcp.server
+
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   jatri_pgdata:
   jatri_document_storage:
