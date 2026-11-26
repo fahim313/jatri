@@ -8,6 +8,17 @@ from app.core.config import get_settings
 
 
 @lru_cache
+def get_router_model() -> ChatGroq:
+    settings = get_settings()
+
+    return ChatGroq(
+        api_key=settings.GROQ_API_KEY,
+        model=settings.GROQ_ROUTER_MODEL,
+        temperature=0,
+    )
+
+
+@lru_cache
 def get_chat_model() -> ChatGroq:
     settings = get_settings()
 
@@ -18,8 +29,12 @@ def get_chat_model() -> ChatGroq:
     )
 
 
+RouterModelDep = Annotated[
+    ChatGroq,
+    Depends(get_router_model),
+]
+
 ChatModelDep = Annotated[
     ChatGroq,
     Depends(get_chat_model),
 ]
-

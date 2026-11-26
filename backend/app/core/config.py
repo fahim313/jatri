@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     GROQ_API_KEY: SecretStr
+    GROQ_ROUTER_MODEL: str
     GROQ_MODEL: str
     
     GEMINI_API_KEY: SecretStr

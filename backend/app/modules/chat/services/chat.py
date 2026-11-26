@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.graph import create_agent_graph
 from app.core.exceptions.errors import NotFoundError
+from app.integrations.llm.dependencies import get_router_model
 from app.modules.chat.repositories.chat import ChatRepository
 from app.modules.chat.schemas.chat import (
     ChatRequest,
@@ -37,7 +38,7 @@ class ChatService:
         self.session = session
         self.repository = ChatRepository(session)
         self.model = model
-        self.question_router = QuestionRouter(model)
+        self.question_router = QuestionRouter(get_router_model())
 
     @staticmethod
     def _build_conversation_context(history) -> str:
@@ -106,6 +107,12 @@ class ChatService:
                 "Question routed | Conversation ID: %s | Types: %s",
                 conversation.id,
                 [item.value for item in route.question_types],
+            )
+
+            logger.info(
+                "DEBUG ROUTE | Question: %s | Types: %s",
+                request.content,
+                route.question_types,
             )
 
             messages: list[AnyMessage] = []

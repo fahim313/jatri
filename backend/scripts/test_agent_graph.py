@@ -6,6 +6,7 @@ from app.agents.graph import create_agent_graph
 from app.db.session import SessionLocal
 from app.integrations.llm.dependencies import get_chat_model
 from app.modules.chat.services.prompts import JATRI_SYSTEM_PROMPT
+from app.modules.chat.services.routing_schemas import QuestionType
 
 QUERY = "What is the official government migration fee for going abroad?"
 
@@ -18,6 +19,7 @@ async def main():
             session=session,
             model=model,
             system_prompt=JATRI_SYSTEM_PROMPT,
+            question_types=[QuestionType.MIGRATION],
         )
 
         result = await graph.ainvoke(

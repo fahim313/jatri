@@ -1,6 +1,7 @@
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from app.integrations.llm.dependencies import get_router_model
 from app.modules.chat.services.routing_schemas import QuestionRoute
 
 ROUTER_SYSTEM_PROMPT = """
@@ -10,8 +11,10 @@ Classify the user's question into one or more of these categories:
 
 1. migration:
    Questions about migration rules, visa requirements, passports,
-   travel procedures, migration costs, worker safety, and overseas
-   employment regulations.
+   travel procedures, migration costs, worker safety, overseas
+   employment regulations, migrant documents, uploaded documents,
+   document status, document approval or rejection, and document
+   verification.
 
 2. agency:
    Questions about recruitment agencies, agency licenses,
@@ -26,21 +29,26 @@ Classify the user's question into one or more of these categories:
    agency, or job services.
 
 Rules:
-- Select every category relevant to the question.
-- A question involving both an agency and migration must include
-  both agency and migration.
-- A question involving both a job and migration must include
-  both job and migration.
-- Use general only when no other category is relevant.
-- Consider the conversation context when interpreting follow-up
-  questions.
-- Do not answer the user's question. Only classify it.
+  - Questions about documents uploaded to Jatri, including their
+    content, status, approval, or rejection, must be classified
+    as migration.
+  - Select every category relevant to the question.
+  - A question involving both an agency and migration must include
+    both agency and migration.
+  - A question involving both a job and migration must include
+    both job and migration.
+  - A question involving both a job and an agency must include
+    both job and agency.
+  - Use general only when no other category is relevant.
+  - Consider the conversation context when interpreting follow-up
+    questions.
+  - Do not answer the user's question. Only classify it.
 """
 
 
 class QuestionRouter:
-    def __init__(self, model: BaseChatModel) -> None:
-        self.model = model.with_structured_output(
+    def __init__(self, model: BaseChatModel | None = None) -> None:
+        self.model = (model or get_router_model()).with_structured_output(
             QuestionRoute,
             method="function_calling",
         )

@@ -30,6 +30,8 @@ def create_agent_graph(
 
     model_with_tools = model.bind_tools(tools) if tools else model
 
+    builder = StateGraph(MessagesState)
+
     async def agent_node(state: MessagesState):
         response = await model_with_tools.ainvoke(
             [
@@ -37,22 +39,16 @@ def create_agent_graph(
                 *state["messages"],
             ]
         )
-
         return {"messages": [response]}
-
-    builder = StateGraph(MessagesState)
 
     builder.add_node("agent", agent_node)
     builder.add_edge(START, "agent")
 
     if tools:
-        builder.add_node("tools", ToolNode(tools))
+        tool_node = ToolNode(tools)
+        builder.add_node("tools", tool_node)
 
-        builder.add_conditional_edges(
-            "agent",
-            tools_condition,
-        )
-
+        builder.add_conditional_edges("agent", tools_condition)
         builder.add_edge("tools", "agent")
     else:
         builder.add_edge("agent", END)

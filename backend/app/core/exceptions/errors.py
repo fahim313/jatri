@@ -40,6 +40,17 @@ class LLMUnavailableError(AppError):
     def __init__(self, message: str = "LLM provider is unavailable"):
         super().__init__(message)
 
+class LLMRateLimitError(LLMUnavailableError):
+    """Raised when the LLM provider rate limit is reached."""
+
+    def __init__(
+        self,
+        retry_after_seconds: int | None = None,
+        message: str = "LLM provider rate limit reached",
+    ):
+        super().__init__(message)
+        self.retry_after_seconds: int | None = retry_after_seconds        
+
 class EmbeddingUnavailableError(AppError):
     """Raised when the embedding provider is unavailable."""
 

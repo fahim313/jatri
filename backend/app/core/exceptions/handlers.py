@@ -8,6 +8,7 @@ from app.core.exceptions.errors import (
     ConflictError,
     EmbeddingUnavailableError,
     ForbiddenError,
+    LLMRateLimitError,
     LLMUnavailableError,
     NotFoundError,
     UnauthorizedError,
@@ -59,7 +60,31 @@ def register_exception_handlers(app: FastAPI) -> None:
             content={
                 "detail": "The assistant is unavailable. Try again later."
             },
+         )
+
+    @app.exception_handler(LLMRateLimitError)
+    async def llm_rate_limited(
+        _: Request,
+        exc: LLMRateLimitError,
+    ) -> JSONResponse:
+        logger.warning(
+            "LLM rate limit reached. Retry after: %s",
+            exc.retry_after_seconds,
         )
+    
+        headers: dict[str, str] = {}
+    
+        if exc.retry_after_seconds is not None:
+            headers["Retry-After"] = str(exc.retry_after_seconds)
+    
+        return JSONResponse(
+            status_code=429,
+            content={
+                "detail": "The assistant is busy right now. Please try again later."
+            },
+            headers=headers,
+        )     
+        
 
     @app.exception_handler(EmbeddingUnavailableError)
     async def embedding_unavailable(
