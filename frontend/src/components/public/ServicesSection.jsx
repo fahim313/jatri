@@ -1,81 +1,83 @@
-
 import { Link } from "react-router-dom";
-import {
-  BriefcaseBusiness,
-  ShieldCheck,
-  FileText,
-  Bot,
-  ArrowRight,
-} from "lucide-react";
-
-const services = [
-  {
-    title: "Find Overseas Jobs",
-    description: "Explore genuine overseas job opportunities.",
-    icon: BriefcaseBusiness,
-    color: "bg-blue-100 text-blue-600",
-    link: "/jobs",
-  },
-  {
-    title: "Verify Agencies",
-    description: "Check the authenticity of recruitment agencies.",
-    icon: ShieldCheck,
-    color: "bg-green-100 text-green-600",
-    link: "/login",
-  },
-  {
-    title: "Migration Guide",
-    description: "Get essential information for your journey.",
-    icon: FileText,
-    color: "bg-purple-100 text-purple-600",
-    link: "/guides",
-  },
-  {
-    title: "AI Assistant",
-    description: "Ask questions about jobs and migration.",
-    icon: Bot,
-    color: "bg-sky-100 text-sky-600",
-    link: "/login",
-  },
-];
+import { ArrowRight } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 function ServicesSection() {
+  const { user } = useAuth();
+  const chatPath = user ? "/chat" : "/login";
+
+  const services = [
+    {
+      title: "Ask Jatri AI",
+      description:
+        "Ask about migration rules, documents and costs in your own words. Answers come with their source.",
+      link: chatPath,
+      state: { from: "/chat" },
+      action: "Start a conversation",
+    },
+    {
+      title: "Check an agency",
+      description:
+        "Look up a recruitment agency by name or license number and see its license status before you give it any money or documents.",
+      link: "/agencies",
+      action: "Check an agency",
+    },
+    {
+      title: "Migration guidance",
+      description:
+        "Read what the approved documents say about required papers, procedures and your rights.",
+      link: "/guides",
+      action: "Read guidance",
+    },
+    {
+      title: "Published jobs",
+      description:
+        "See the openings that have been published, then ask Jatri AI about any of them.",
+      link: "/jobs",
+      action: "See jobs",
+    },
+  ];
+
   return (
-    <section id="services" className="bg-white px-6 py-12">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {services.map((service) => {
-          const Icon = service.icon;
+    <section
+      id="services"
+      className="border-b border-white/10 bg-zinc-900/50 px-6 py-16"
+    >
+      <div className="mx-auto max-w-7xl">
+        <h2 className="text-2xl font-semibold text-white">
+          What you can do here
+        </h2>
+        <p className="mt-2 max-w-2xl text-zinc-400">
+          Start with a question. Jobs and agency details support your decision,
+          they are not the whole service.
+        </p>
 
-          return (
-            <Link
-              key={service.title}
-              to={service.link}
-              className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg"
-            >
-              <div
-                className={`mb-5 flex h-14 w-14 items-center justify-center rounded-xl ${service.color}`}
-              >
-                <Icon size={28} />
+        <ol className="mt-10 grid gap-x-12 gap-y-10 md:grid-cols-2">
+          {services.map((service, index) => (
+            <li key={service.title} className="flex gap-5">
+              <span className="text-sm font-medium text-zinc-600">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+
+              <div>
+                <h3 className="font-semibold text-white">{service.title}</h3>
+
+                <p className="mt-2 text-sm leading-6 text-zinc-400">
+                  {service.description}
+                </p>
+
+                <Link
+                  to={service.link}
+                  state={service.state}
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-white transition hover:text-zinc-300"
+                >
+                  {service.action}
+                  <ArrowRight size={15} />
+                </Link>
               </div>
-
-              <h3 className="text-lg font-bold text-blue-950">
-                {service.title}
-              </h3>
-
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                {service.description}
-              </p>
-
-              <div className="mt-5 flex items-center gap-2 text-sm font-semibold text-blue-600">
-                Explore More
-                <ArrowRight
-                  size={16}
-                  className="transition group-hover:translate-x-1"
-                />
-              </div>
-            </Link>
-          );
-        })}
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

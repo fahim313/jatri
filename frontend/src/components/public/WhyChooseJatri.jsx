@@ -1,87 +1,46 @@
-import {
-  ShieldCheck,
-  BadgeCheck,
-  BookOpenCheck,
-  Bot,
-  Headset,
-} from "lucide-react";
-
 const features = [
   {
-    icon: ShieldCheck,
-    title: "Trusted Information",
+    title: "Answers with sources",
     description:
-      "Get reliable information and guidance to make informed decisions throughout your migration journey.",
+      "Every answer comes from documents approved by administrators, and you can see which document it came from.",
   },
   {
-    icon: BadgeCheck,
-    title: "Verified Agencies",
+    title: "Agency checks",
     description:
-      "Check agency information and make safer choices before starting your overseas migration process.",
+      "Look up a recruitment agency and see whether it is verified before you pay or hand over papers.",
   },
   {
-    icon: BookOpenCheck,
-    title: "Easy Migration Guides",
+    title: "Plain migration guidance",
     description:
-      "Understand migration procedures, required documents, and important guidelines in one place.",
+      "Required documents, procedures and your rights, explained in simple language.",
   },
   {
-    icon: Bot,
-    title: "AI-Powered Assistance",
+    title: "Ask in your own words",
     description:
-      "Get quick answers to your migration-related questions with our AI-powered assistant.",
-  },
-  {
-    icon: Headset,
-    title: "Accessible Support",
-    description:
-      "Find helpful resources and support to make your overseas journey easier.",
+      "No forms and no filters. Write your question the way you would ask a person.",
   },
 ];
 
 function WhyChooseJatri() {
   return (
-    <section className="bg-white px-6 py-16">
+    <section className="bg-zinc-900/50 px-6 py-16">
       <div className="mx-auto max-w-7xl">
-        <div className="mx-auto mb-12 max-w-2xl text-center">
-          <p className="font-semibold uppercase tracking-wider text-blue-600">
-            Why Choose Us
-          </p>
+        <h2 className="text-2xl font-semibold text-white">Why Jatri</h2>
+        <p className="mt-2 max-w-2xl text-zinc-400">
+          Built to help you make safer decisions before you commit to an
+          overseas job.
+        </p>
 
-          <h2 className="mt-3 text-3xl font-bold text-blue-950 md:text-4xl">
-            Why Choose Jatri?
-          </h2>
-
-          <p className="mt-4 leading-relaxed text-gray-500">
-            We make your overseas migration journey easier with reliable
-            information, helpful tools, and accessible guidance.
-          </p>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature) => {
-            const Icon = feature.icon;
-
-            return (
-              <div
-                key={feature.title}
-                className="rounded-2xl border border-gray-100 bg-slate-50 p-6 transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg"
-              >
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                  <Icon size={28} />
-                </div>
-
-                <h3 className="text-lg font-bold text-blue-950">
-                  {feature.title}
-                </h3>
-
-                <p className="mt-3 leading-relaxed text-gray-500">
-                  {feature.description}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+        <dl className="mt-10 grid gap-px overflow-hidden rounded-md border border-white/10 bg-white/10 sm:grid-cols-2">
+          {features.map((feature) => (
+            <div key={feature.title} className="bg-zinc-950 p-6">
+              <dt className="font-semibold text-white">{feature.title}</dt>
+              <dd className="mt-2 text-sm leading-6 text-zinc-400">
+                {feature.description}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </section>
   );

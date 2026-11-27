@@ -1,113 +1,116 @@
-
 import { Link } from "react-router-dom";
-import {
-  Plane,
-  MapPin,
-  Mail,
-  Phone,
-  ArrowRight,
-} from "lucide-react";
+import { Mail, MapPin, Phone, Plane } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 function Footer() {
+  const { isAuthenticated } = useAuth();
+  const chatPath = isAuthenticated ? "/chat" : "/login";
+
+  const linkClass = "text-zinc-400 transition hover:text-white";
+
   return (
-    <footer className="bg-blue-950 text-white">
+    <footer
+      id="contact"
+      className="border-t border-white/10 bg-zinc-950 text-white"
+    >
       <div className="mx-auto max-w-7xl px-6 py-14">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <Link to="/" className="mb-5 inline-flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
-                <Plane size={23} />
-              </div>
-              <span className="text-2xl font-bold">Jatri</span>
+            <Link to="/" className="inline-flex items-center gap-2">
+              <Plane className="h-6 w-6 -rotate-12 text-white" />
+              <span className="text-xl font-semibold">Jatri</span>
             </Link>
 
-            <p className="max-w-xs leading-relaxed text-blue-100/70">
-              Your trusted partner for a safer and easier overseas migration
-              journey.
+            <p className="mt-4 max-w-xs text-sm leading-6 text-zinc-400">
+              Ask before you go abroad. Information about agencies, jobs and
+              migration rules for Bangladeshi workers.
             </p>
           </div>
 
           <div>
-            <h3 className="mb-5 text-lg font-semibold">Quick Links</h3>
+            <h3 className="mb-4 text-sm font-semibold text-white">
+              Quick links
+            </h3>
 
-            <ul className="space-y-3 text-blue-100/70">
+            <ul className="space-y-3 text-sm">
               <li>
-                <Link to="/" className="transition hover:text-white">
+                <Link to="/" className={linkClass}>
                   Home
                 </Link>
               </li>
               <li>
-                <Link to="/jobs" className="transition hover:text-white">
-                  Overseas Jobs
+                <Link to={chatPath} state={{ from: "/chat" }} className={linkClass}>
+                  Ask Jatri AI
                 </Link>
               </li>
               <li>
-                <Link to="/guides" className="transition hover:text-white">
-                  Migration Guides
+                <Link to="/guides" className={linkClass}>
+                  Migration guidance
                 </Link>
               </li>
               <li>
-                <Link to="/login" className="transition hover:text-white">
-                  Login
+                <Link to="/jobs" className={linkClass}>
+                  Published jobs
                 </Link>
               </li>
-              <li>
-                <Link to="/signup" className="transition hover:text-white">
-                  Sign Up
-                </Link>
-              </li>
+
+              {!isAuthenticated && (
+                <>
+                  <li>
+                    <Link to="/login" className={linkClass}>
+                      Login
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/signup" className={linkClass}>
+                      Sign Up
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 
           <div>
-            <h3 className="mb-5 text-lg font-semibold">Our Services</h3>
+            <h3 className="mb-4 text-sm font-semibold text-white">
+              What we offer
+            </h3>
 
-            <ul className="space-y-3 text-blue-100/70">
-              <li>Overseas Job Opportunities</li>
-              <li>Agency Verification</li>
-              <li>Migration Document Guides</li>
-              <li>AI Migration Assistant</li>
+            <ul className="space-y-3 text-sm text-zinc-400">
+              <li>AI migration assistant</li>
+              <li>Agency verification</li>
+              <li>Migration document guidance</li>
+              <li>Published job listings</li>
             </ul>
           </div>
 
           <div>
-            <h3 className="mb-5 text-lg font-semibold">Contact Us</h3>
+            <h3 className="mb-4 text-sm font-semibold text-white">
+              Contact us
+            </h3>
 
-            <ul className="space-y-4 text-blue-100/70">
+            <ul className="space-y-4 text-sm text-zinc-400">
               <li className="flex items-start gap-3">
-                <Mail size={19} className="mt-1 shrink-0 text-blue-400" />
+                <Mail size={17} className="mt-0.5 shrink-0 text-zinc-500" />
                 <span>support@jatri.com</span>
               </li>
 
               <li className="flex items-start gap-3">
-                <Phone size={19} className="mt-1 shrink-0 text-blue-400" />
+                <Phone size={17} className="mt-0.5 shrink-0 text-zinc-500" />
                 <span>Contact support</span>
               </li>
 
               <li className="flex items-start gap-3">
-                <MapPin size={19} className="mt-1 shrink-0 text-blue-400" />
+                <MapPin size={17} className="mt-0.5 shrink-0 text-zinc-500" />
                 <span>Bangladesh</span>
               </li>
             </ul>
-
-            <Link
-              to="/guides"
-              className="mt-6 inline-flex items-center gap-2 font-semibold text-blue-300 transition hover:text-white"
-            >
-              Explore Guides
-              <ArrowRight size={17} />
-            </Link>
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/15 pt-6 text-center text-sm text-blue-100/60">
-          <p>
-            © {new Date().getFullYear()} Jatri. All rights reserved.
-          </p>
-
-          <p className="mt-2">
-            Making overseas migration easier and safer.
-          </p>
+        <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} Jatri. All rights reserved.</p>
+          <p>Jatri AI gives general information, not legal advice.</p>
         </div>
       </div>
     </footer>

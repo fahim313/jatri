@@ -8,6 +8,8 @@ import Home from "../pages/public/Home";
 import Jobs from "../pages/public/Jobs";
 import JobDetails from "../pages/public/JobDetails";
 import MigrationGuides from "../pages/public/MigrationGuides";
+import Agencies from "../pages/public/Agencies";
+import AgencyDetails from "../pages/public/AgencyDetails";
 
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
@@ -23,6 +25,9 @@ function AppRoutes() {
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/jobs/:id" element={<JobDetails />} />
         <Route path="/guides" element={<MigrationGuides />} />
+
+        <Route path="/agencies" element={<Agencies />} />
+        <Route path="/agencies/:id" element={<AgencyDetails />} />
       </Route>
 
       <Route path="/login" element={<Login />} />
