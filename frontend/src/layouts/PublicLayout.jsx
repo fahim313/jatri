@@ -1,19 +1,15 @@
 import { Outlet } from "react-router-dom";
-
+import Navbar from "../components/public/Navbar";
+import Footer from "../components/public/Footer";
 function PublicLayout() {
   return (
     <>
-      <header>
-        Public Navbar
-      </header>
+      <Navbar />
 
       <main>
         <Outlet />
       </main>
-
-      <footer>
-        Jatri Footer
-      </footer>
+      <Footer />
     </>
   );
 }
