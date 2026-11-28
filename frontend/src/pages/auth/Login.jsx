@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { loginUser } from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
 
 const inputClass =
   "w-full rounded-md border border-white/10 bg-zinc-900 px-3.5 py-2.5 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-white/40 focus:ring-1 focus:ring-white/20";
@@ -8,16 +8,20 @@ const inputClass =
 const labelClass = "mb-1.5 block text-sm font-medium text-zinc-300";
 
 function isSafePath(path) {
-  return typeof path === "string" && path.startsWith("/") && !path.startsWith("//");
+  return (
+    typeof path === "string" &&
+    path.startsWith("/") &&
+    !path.startsWith("//")
+  );
 }
 
 function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
 
-  // message বাদে বাকি state (from, initialQuestion, jobId ...) পরের পেজে নিয়ে যাওয়া হবে
   const { message, ...intent } = location.state || {};
-  const redirectTo = isSafePath(intent.from) ? intent.from : "/";
+  const redirectTo = isSafePath(intent.from) ? intent.from : "/dashboard";
   const goingToChat = redirectTo === "/chat";
 
   const [showPassword, setShowPassword] = useState(false);
@@ -45,14 +49,15 @@ function Login() {
     setLoading(true);
 
     try {
-      const result = await loginUser({
+      await login({
         email: formData.email,
         password: formData.password,
       });
 
-      localStorage.setItem("access_token", result.access_token);
-
-      navigate(redirectTo, { replace: true, state: intent });
+      navigate(redirectTo, {
+        replace: true,
+        state: intent,
+      });
     } catch (err) {
       const detail = err.response?.data?.detail;
 
